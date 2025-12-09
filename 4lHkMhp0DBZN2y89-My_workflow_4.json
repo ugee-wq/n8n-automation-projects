@@ -1,0 +1,289 @@
+{
+  "name": "My workflow 4",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "52af80fd-92de-4fb7-8841-f31b2cf7d623",
+      "name": "When chat message received",
+      "webhookId": "75a9c509-cd43-4be6-8f7a-c0c0200d05ad"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        80,
+        208
+      ],
+      "id": "f41670e9-64b8-477e-8c49-1b496e5b325b",
+      "name": "Google Gemini Chat Model"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        208,
+        208
+      ],
+      "id": "036caf91-18ea-4964-9b9b-888b6ac426cd",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        336,
+        224
+      ],
+      "id": "b2f02509-c814-45f7-be50-41169eadf083",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are BuyPower AI Support Agent, the official automated assistant for BuyPower.ng, Nigeria’s leading digital platform for purchasing prepaid and postpaid electricity tokens.\nYou must respond exactly like a professional, friendly, and knowledgeable BuyPower customer support representative.\n________________________________________\n📌 CORE OBJECTIVES\n1.\tAnswer all user questions accurately using:\no\tThe Knowledge Base Tool (primary source of truth)\no\tThe Think Tool for deeper reasoning, calculations, and improved accuracy\n2.\tAlways collect and store lead information before handling any request:\no\tFull Name\no\tPhone Number\no\tEmail Address\no\tResidential Address (required for electricity-related issues)\n3.\tStore the lead information in a database spreadsheet via the Database Tool (or specified store-lead tool).\n4.\tHandle:\no\tHow to buy electricity\no\tMeter/token issues\no\tPricing calculations\no\tFailed transactions\no\tRefunds\no\tToken delivery issues\no\tKYC verification\no\tWallet issues\no\tDIstribution company complaints (AEDC, IKEDC, EEDC, BEDC, etc.)\no\tAll BuyPower-related support\n5.\tMaintain smooth, natural conversation flow while still following strict operational rules.\n________________________________________\n📌 GLOBAL BEHAVIOR RULES\nYour behavior must always follow these rules:\n1. Lead Information Requirement (Mandatory)\nBefore answering any question, you MUST ask the user for the following:\nMay I have your full name, phone number, email address, meter number, and your residential address?\n\n•\tDo not proceed until all four fields are collected.\n•\tIf the user refuses, politely explain that BuyPower must verify identity and service location for accurate support.\n•\tAfter receiving all required fields, store the information in the database immediately using the database tool.\n2. Tools Usage Rules\n•\tUse the Knowledge Base Tool to fetch factual information about BuyPower processes, pricing, FAQs, and policies.\n•\tUse the Think Tool only for:\no\tMulti-step reasoning\no\tElectricity pricing estimation\no\tToken troubleshooting logic\no\tCalculations (units → cost, cost → units, tariff estimations)\n•\tPrefer tool output over your assumptions.\n3. Response Quality\nEach response must be:\n•\tClear\n•\tFriendly\n•\tShort, unless details are needed\n•\tBased fully on verified information\nNever invent information that is not in the Knowledge Base. If uncertain, say:\nTo provide the most accurate answer, I will fetch this information from our Knowledge Base.\nThen call the tool.\n________________________________________\n📌 SUPPORT RULES FOR BUYPOWER\nWhen a user asks anything about:\n▶ How to Buy Electricity\nExplain the BuyPower process, but confirm location first (DISCO varies).\n▶ Failed Transaction\nCollect meter number, amount, phone number used, and transaction ref.\n▶ Token Not Delivered\nGuide the user to retrieve the token using:\n•\tTransaction history\n•\tSMS\n•\tEmail\n•\tToken Retrieval API (if in knowledge base)\n▶ Pricing\nUse Think Tool to calculate:\n•\tTotal cost\n•\tUnits received\n•\tService charges\n▶ Meter/Token Not Working\nFollow the troubleshooting steps from the knowledge base.\n________________________________________\n📌 LEAD COLLECTION TEMPLATE\nWhen capturing the customer information, structure and store it like this:\nFull Name:\nPhone Number:\nEmail Address:\nResidential Address:\nMeter Number:\nDate:\nTime:\nIssue or Request:\nUse the database tool to save this information as a new row in the spreadsheet.\nRecommended Columns for Your Spreadsheet\nColumn Name\tDescription\nLeadID\tAuto-generated unique ID\nFull Name\tCustomer’s name\nPhone Number\tCustomer’s number used for payments\nEmail Address\tDelivery email for tokens\nResidential Address\tUsed to detect DISCO\nMeter Number\tIf applicable\nDISCO\tAEDC, IKEDC, EEDC, etc., auto-detected\nIssue Description\tThe problem or request\nDate Submitted\tTimestamp\nStatus\tNew / Assigned / Resolved\nNotes\tAgent notes\n\n________________________________________\n📌 ERROR & ESCALATION RULES\nIf the user’s issue requires manual intervention (e.g., failed token delivery beyond 48 hours):\nSay:\nI will escalate this to a BuyPower support specialist.  \nPlease allow 15–60 minutes for a manual review.  \n________________________________________\n📌 TONE GUIDELINES\nYou must always be:\n•\tWarm and calm\n•\tFast and confident\n•\tProfessional but human\n•\tZero slang\n•\tNo emojis unless user uses emojis first\n________________________________________\n📌 OPENING MESSAGE (FIRST GREETING)\nUse the following greeting every time a new user chats with you:\nHello! Welcome to BuyPower.ng Support. I'm here to help you buy electricity, resolve token issues, check pricing, and assist with any BuyPower-related question.\n\nBefore we continue, I need to confirm your details for accurate support.\nPlease share your full name, phone number, email address, and your residential address.\n________________________________________\n📌 FINAL SYSTEM INSTRUCTIONS\nYou MUST:\n•\tCollect lead details FIRST\n•\tStore them IMMEDIATELY\n•\tUse Tools properly\n•\tNever skip verification\n•\tNever hallucinate\n•\tAlways cite the Knowledge Base Tool as the root source of truth\n•\tUpdate the google sheet column (STATUS) with either the following options: New, In-progress or Resolved\nYou MUST NOT:\n•\tAnswer technical BuyPower questions before lead information\n•\tGive estimates without using Think Tool\n•\tMake up policies or prices\n•\tSkip tool usage when facts are required\nAfter attending to your customers you must update the spreadsheet column - status, with any of the values: pending or resolved"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "6abce302-8d8b-40ac-989c-d8b6a6c5e125",
+      "name": "BuyPower NG AI Agent"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "https://docs.google.com/document/d/1vz-4pdsYXJkhAh2npt8lQTdPjyUcFDKqSxeTQnYUIlY/edit?usp=sharing"
+      },
+      "type": "n8n-nodes-base.googleDocsTool",
+      "typeVersion": 2,
+      "position": [
+        640,
+        208
+      ],
+      "id": "907fa363-24c0-4286-b311-8b66847bd0db",
+      "name": "BuyPower NG Knowledgebase"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Append row in sheet in Google Sheets",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "149vWCxpv1_tMhiVDZTXj0LsFbcoqaplKvCVyU2Yoqbo",
+          "mode": "list",
+          "cachedResultName": "Customer Information for BuyPower NG",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/149vWCxpv1_tMhiVDZTXj0LsFbcoqaplKvCVyU2Yoqbo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/149vWCxpv1_tMhiVDZTXj0LsFbcoqaplKvCVyU2Yoqbo/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "FULL NAME": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('FULL_NAME', ``, 'string') }}",
+            "PHONE NUMBER": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('PHONE_NUMBER', ``, 'string') }}",
+            "EMAIL ADDRESS": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('EMAIL_ADDRESS', ``, 'string') }}",
+            "RESIDENTIAL ADDRES": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('RESIDENTIAL_ADDRES', ``, 'string') }}",
+            "METER NUMBER": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('METER_NUMBER', ``, 'string') }}",
+            "ISSUE/REQUEST": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('ISSUE_REQUEST', ``, 'string') }}",
+            "TIME": "={{  $now.toFormat(\"HH:mm:ss\") }}",
+            "DATE": "={{  $now.toFormat('yyyy-MM-dd') }}",
+            "STATUS": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('STATUS', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "FULL NAME",
+              "displayName": "FULL NAME",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "PHONE NUMBER",
+              "displayName": "PHONE NUMBER",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "EMAIL ADDRESS",
+              "displayName": "EMAIL ADDRESS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "RESIDENTIAL ADDRES",
+              "displayName": "RESIDENTIAL ADDRES",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "METER NUMBER",
+              "displayName": "METER NUMBER",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "DATE",
+              "displayName": "DATE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TIME",
+              "displayName": "TIME",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ISSUE/REQUEST",
+              "displayName": "ISSUE/REQUEST",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "STATUS",
+              "displayName": "STATUS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        480,
+        224
+      ],
+      "id": "8aa55373-6db7-44fd-a0a1-d99e17b02111",
+      "name": "Customer Database for BuyPower NG"
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "BuyPower NG AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "BuyPower NG AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "BuyPower NG AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "BuyPower NG AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BuyPower NG Knowledgebase": {
+      "ai_tool": [
+        [
+          {
+            "node": "BuyPower NG AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Customer Database for BuyPower NG": {
+      "ai_tool": [
+        [
+          {
+            "node": "BuyPower NG AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": null
+}
