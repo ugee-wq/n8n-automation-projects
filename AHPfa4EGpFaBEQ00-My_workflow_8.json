@@ -1,0 +1,67 @@
+{
+  "name": "My workflow 8",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "c4fa14ef-8d80-4c87-a094-b361f2e3d209",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b791d908-721b-4a12-ae67-5b6f1daddd70",
+      "name": "Webhook",
+      "webhookId": "c4fa14ef-8d80-4c87-a094-b361f2e3d209"
+    },
+    {
+      "parameters": {
+        "guildId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "bf085d5a-590a-454f-87ea-65287a3c6b79",
+      "name": "Create a channel",
+      "webhookId": "a9c7dbba-4fa0-45f9-bc30-ef3e3f7c8be8",
+      "credentials": {
+        "discordBotApi": {
+          "id": "e9sMA40ZrC7UKaWv",
+          "name": "Discord Bot account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Create a channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

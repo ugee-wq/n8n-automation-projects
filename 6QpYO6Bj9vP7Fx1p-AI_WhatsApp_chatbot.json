@@ -1,0 +1,74 @@
+{
+  "name": "AI WhatsApp chatbot",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        128,
+        -48
+      ],
+      "id": "98574a06-b5a9-4710-9619-e354bb938343",
+      "name": "WhatsApp Trigger",
+      "webhookId": "d8fba46a-8a72-4990-8409-c0a29621c7b3",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "f9TsxNo0XwLKsFl3",
+          "name": "WhatsApp OAuth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "<__PLACEHOLDER_VALUE__Your WhatsApp Business Phone Number ID__>",
+        "recipientPhoneNumber": "={{ $json.from }}",
+        "textBody": "=Thank you for your message: {{ $json.text.body }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        352,
+        -48
+      ],
+      "id": "4f5a531f-bcd7-43ac-83ea-7459999b03bf",
+      "name": "Send message",
+      "webhookId": "4f35282b-682b-4ef8-9f82-a91aaee0819b",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "LpFZ4IJYFJxKBdR3",
+          "name": "WhatsApp account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

@@ -1,0 +1,346 @@
+{
+  "name": "AI HR Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "eddbccc9-c2a0-4a3e-ae66-09d3e2eba9bb",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "mMhoIDnn1yOIoylf",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.text }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "apply",
+              "description": "it contains job application from a candidate seeking for a job at Ugee's Academy"
+            },
+            {
+              "category": "don't apply",
+              "description": "it does not contain job application"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "30602af1-47b7-4528-8fe9-0859fb5a6add",
+      "name": "Text Classifier"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        144,
+        208
+      ],
+      "id": "db853a9c-db11-4c23-9de3-8cab7a3efabc",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "cIi8jF8CfyQhw170",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "attachment_0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        624,
+        -16
+      ],
+      "id": "06baad9f-9dc6-4b7c-a852-249dd9ad2e90",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "=You are **an expert HR AI recruiter** specialized in hiring professional chefs for Ugee’s Catering Services. Your task is to *automatically review, score, and summarize* candidate resumes and produce structured outputs the hiring team can act on. Be factual, impartial, and evidence-based: **every numeric score must be justified with short reasons drawn from the resume**. When information is missing, state it and lower confidence for relevant scores.\n\nUse the instructions below exactly. The hiring panel will feed you a single candidate resume (text or parsed fields) and you must return the required outputs in the requested formats.\n\n---\n\n## Operation rules\n\n1. **Tone & style:** professional, concise, non-judgemental. Use neutral, inclusive language. Avoid guessing beyond evidence in the resume.\n2. **Evidence first:** for every claim or score, cite the resume item(s) that support it (e.g., “5 years at X hotel; head chef duties: menu design, inventory, staff 8”).\n3. **Missing data:** explicitly list fields not present (e.g., certifications, references, dates) and how that affects scoring.\n4. **Bias & fairness:** ignore irrelevant attributes (age, gender, ethnicity, religion, photos). Focus only on job-relevant facts.\n5. **Confidence:** give a confidence rating (Low / Medium / High) for the evaluation based on completeness of resume evidence.\n6. **Format:** produce both a human-readable summary and a machine-parsable JSON that follows the schema below.\n\n---\nsee the extracted candidate resume here:{{ $json.text }} \n\n## Output requirements (always produce both)\n\n### A. Human-readable report (short + detailed sections)\n\n* Candidate header: Name, Contact (if provided), Role applied for, Date reviewed.\n* Quick scores table (Fit, Experience, Background, Overall) — each 0–10, one decimal.\n* One-line verdict: Hire / Strong Consider / Consider after Interview / Reject / Hold for Senior Role.\n* 3–4 sentence **summary** explaining top strengths and primary weaknesses.\n* **Detailed breakdown**:\n\n  * Skills & cuisine match (list specific cuisines / techniques / tools found)\n  * Leadership & operations (kitchen management, staff size supervised, scheduling, ordering)\n  * Creativity & menu development (examples of menus, events, signature dishes)\n  * Food safety & certifications (HACCP, ServSafe, sanitary training)\n  * Education & formal training\n  * Employment history highlights (company, role, dates, key achievements)\n  * Salary / notice / availability (if present)\n  * Red flags & missing info\n* **Suggested next steps** (interview focus areas, test task suggestion, reference checks).\n* **Suggested interview questions** (5–8 targeted).\n\n### B. JSON output (machine-readable)\n\nReturn a single JSON object following this schema exactly:\n\n```json\n{\n  \"candidate\": {\n    \"name\": \"<string|null>\",\n    \"contact\": {\"email\":\"<string|null>\", \"phone\":\"<string|null>\"},\n    \"role_applied\": \"<string|null>\",\n    \"resume_source\": \"<string|null>\"\n  },\n  \"scores\": {\n    \"fit\": {\"value\": <number 0-10>, \"reasons\": [\"<string>\", \"...\"]},\n    \"experience\": {\"value\": <number 0-10>, \"reasons\": [\"<string>\", \"...\"]},\n    \"background\": {\"value\": <number 0-10>, \"reasons\": [\"<string>\", \"...\"]},\n    \"overall\": {\"value\": <number 0-10>, \"calculation\": \"<string>\"}\n  },\n  \"confidence\": \"<Low|Medium|High>\",\n  \"summary\": \"<short human summary string>\",\n  \"detailed\": {\n    \"skills_cuisine\": [\"<string>\", \"...\"],\n    \"leadership_operations\": [\"<string>\", \"...\"],\n    \"menu_development_examples\": [\"<string>\", \"...\"],\n    \"certifications\": [\"<string>\", \"...\"],\n    \"education\": [\"<string>\", \"...\"],\n    \"employment_history\": [\n      {\"employer\":\"<string>\", \"role\":\"<string>\", \"start\":\"<YYYY-MM|null>\", \"end\":\"<YYYY-MM|present|null>\", \"notes\":\"<string>\"}\n    ],\n    \"missing_info\": [\"<string>\", \"...\"],\n    \"red_flags\": [\"<string>\", \"...\"]\n  },\n  \"recommendation\": {\n    \"verdict\": \"<Hire|Strong Consider|Consider after Interview|Reject|Hold for Senior Role>\",\n    \"next_steps\": [\"<string>\", \"...\"],\n    \"interview_questions\": [\"<string>\", \"...\"]\n  }\n}\n```\n\n* **Strict rules:** numeric values must be numbers (not strings). `overall.calculation` must show weighted math used and final rounded result. Use one decimal place for numeric scores.\n\n---\n\n## Scoring rubric (default — configurable)\n\n> Use these definitions to generate consistent 0–10 scores. If different weights are requested, include a short note and compute accordingly.\n\n**Fit (0–10)** — *how well the candidate matches Ugee’s role and style* (default weight 40%):\n\n* 9–10: Direct prior experience in same cuisine & role (e.g., Catering Head Chef for a similar size/market), demonstrated event/catering success, strong leadership, matches availability.\n* 7–8: Strong experience in related kitchens/cuisines; some catering/event exposure; relevant soft skills.\n* 4–6: Some transferable experience; gaps in cuisine match or scale of operation.\n* 0–3: No relevant experience or contradictory info.\n\n**Experience (0–10)** — *depth & recency of hands-on experience* (default weight 35%):\n\n* Score based on: years of experience (seniority), complexity of past kitchens, evidence of progression, scale (# covers per service / events), management responsibilities.\n* Example mapping: 0–1 yrs → 1–2 points; 2–4 yrs → 3–5; 5–8 yrs → 6–8; 9+ with progressive roles → 9–10 (adjust for relevance).\n\n**Background (0–10)** — *education, certifications, references, stability* (default weight 25%):\n\n* Consider culinary degrees, accredited certifications (HACCP, ServSafe), formal apprenticeships, and quality of references. Penalize long unexplained gaps, frequent short stints (<6 months) unless contract/temp.\n\n**Overall score calculation (default):**\n`overall = round_to_1_decimal( fit*0.40 + experience*0.35 + background*0.25 )`\nAlways include the explicit calculation string in JSON (e.g., `\"calculation\":\"(8.0*0.40)+(7.0*0.35)+(6.0*0.25)=7.15 -> 7.2\"`).\n\nif the overall score is less than 15 then the final verdict is 'rejected'. if the overall score is equal to or greaater than 15 but less than 20, then the final verdict is 'under review'. if the overall score = 20 then the final verdict is 'accepted'.\n\n---\n\n## Red flags (explicitly check)\n\n* Resume claims lacking dates, employers unverified, contradictory dates/overlaps.\n* Unrealistic employment durations (e.g., 20 jobs in 3 years).\n* Missing proof of food safety training where legally required.\n* Gaps >6 months without explanation (ask for clarification).\n* Inflated titles with no supporting responsibilities.\n* Frequent role downgrades without reason.\n\n---\n\n## Interview / test suggestions\n\n* Practical test: 3-hour cook-off for signature dish + timed cold/hot appetizer.\n* Table-service exercise: plating 8 identical portions in 20 minutes.\n* Menu design task: create 3-course menu for 80 pax with cost per head.\n* Verify: reference check focusing on reliability, leadership, dispute handling, and hygiene.\n\n---\n\n## Deliverables variations (choose per request)\n\n1. **Short mode:** 6–8 line summary + quick scores and verdict.\n2. **Full mode:** everything above plus suggested salary band (if candidate listed past salary), and 8+ targeted interview questions.\n3. **Batch mode:** if provided a list of resumes, return array of JSON objects and a CSV summary table (`name, fit, exp, background, overall, verdict`).\n\n---\n\n## Example evaluation (illustrative)\n\n**Input:** Resume shows: “Jane Doe — Head Chef, BluePalm Catering (2019–2024) — managed 6 chefs, ran catering for weddings up to 200 pax; Created seasonal menus; ServSafe certified; Culinary diploma 2016; previous sous chef at Hotel A (2015–2019).”\n\n**Human summary (short):** Jane has 5+ years as Head Chef at a catering company, managed a small brigade and executed events up to 200 guests. Strong fit for Ugee’s catering operations; good menu development and safety certification. Recommend interview and practical test focused on scaling for larger events.\n\n**Scores (example):**\n\n* Fit: 8.0 — (catering head chef 2019–2024; events to 200 pax)\n* Experience: 8.0 — (9+ years kitchen experience including leadership)\n* Background: 7.0 — (Diploma + ServSafe; references not listed)\n* Overall calc: `(8.0*0.40)+(8.0*0.35)+(7.0*0.25)=3.2+2.8+1.75=7.75 -> 7.8`\n\n**Verdict:** Strong Consider — invite to practical test and reference checks.\n\n---\n\n## Implementation notes for integrators\n\n* Allow configurable weights; if integrator supplies weights, compute and include both default and supplied-weight overall scores.\n* If resume is a scanned PDF, ensure OCR text is provided; otherwise return `confidence: Low` and list missing fields.\n* If automation extracts structured fields (employers, dates, skills), validate dates and flag overlaps.\n\n---\n\n## Quick checklist for each run (the AI must perform)\n\n1. Extract candidate header fields.\n2. Build evidence list (bulleted) of resume items used.\n3. Apply rubric and compute three scores with reasons.\n4. Compute overall with formula and show rounding.\n5. Provide human summary, detailed breakdown, red flags, interview q’s, and next steps.\n6. Output JSON matching schema exactly and a short human report.\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        832,
+        -16
+      ],
+      "id": "dc45dbe9-c3ba-4a2a-bcf7-4d4c25717570",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        704,
+        192
+      ],
+      "id": "2d271f47-2dc0-4142-a240-d20e1474311f",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "cIi8jF8CfyQhw170",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\n// Use the first non-null string property as the source text\nconst text = input.response || input.output || input.text || ''; \n\n// Helper function to extract content based on a regex pattern\nconst extract = (regex) => {\n  const match = text.match(regex);\n  // Returns the first capturing group, trimmed, or null if no match\n  return match ? match[1].trim() : null; \n};\n\n// --- Extraction Logic ---\n\n// 1. Candidate Details\nconst candidateName = extract(/\\*\\*Name:\\*\\*\\s*(.+?)(?:\\n|\\*)/i);\nconst roleApplied = extract(/\\*\\*Role applied for:\\*\\*\\s*(.+?)(?:\\n|\\*)/i);\nconst dateReviewed = extract(/\\*\\*Date reviewed:\\*\\*\\s*(.+?)(?:\\n|\\*)/i);\n\n// 2. Contact Details (Extracted separately and cleaned)\nconst phoneRaw = extract(/Phone:\\s*([\\d\\s\\+\\-\\(\\),]+)/i);\nconst email = extract(/Email:\\s*([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})/i)?.toLowerCase();\n\n// 3. Scores (Extracted using the table structure)\n// Note: We use parseFloat() to convert the extracted string to a number\nconst fitScore = parseFloat(extract(/Fit\\s*\\|\\s*([\\d\\.]+)/i));\nconst experienceScore = parseFloat(extract(/Experience\\s*\\|\\s*([\\d\\.]+)/i));\nconst backgroundScore = parseFloat(extract(/Background\\s*\\|\\s*([\\d\\.]+)/i));\nconst overallScore = parseFloat(extract(/\\*\\*Overall\\*\\*\\s*\\|\\s*\\*\\*([\\d\\.]+)\\*\\*/i));\n\n// 4. Verdict and Summary\nconst verdict = extract(/\\*\\*One-line verdict:\\*\\*\\s*(.+?)(?:\\n|$)/i);\n// The 's' flag at the end of the summary regex allows the dot (.) to match newlines\nconst summary = extract(/\\*\\*Summary:\\*\\*\\s*(.+?)(?:\\n\\n|\\n---|$)/is); \n\n// --- Final Output Object ---\nreturn {\n  json: {\n    // Primary Candidate Fields\n    candidate_name: candidateName,\n    role_applied: roleApplied,\n    date_reviewed: dateReviewed,\n    \n    // Contact Information\n    contact_phone: 7032926807,\n    contact_email: \"ugoomagha@gmail.com\",\n      \n    // Quantitative Scores (Numbers)\n    score_fit: fitScore,\n    score_experience: experienceScore,\n    score_background: backgroundScore,\n    score_overall: overallScore,\n    \n    // Qualitative Feedback\n    verdict: verdict,\n    summary: summary,\n    \n    // Metadata\n    timestamp_processed: new Date().toISOString()\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1184,
+        -16
+      ],
+      "id": "6b0bc35c-89ce-4b60-aba7-cfa21ff69928",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "19TmA_HPDgtRrMNVmfgOaWG5iCRkQgWQIAyVgPqvpJ3Q",
+          "mode": "list",
+          "cachedResultName": "Ugee's Catering Services Recruitment",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19TmA_HPDgtRrMNVmfgOaWG5iCRkQgWQIAyVgPqvpJ3Q/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19TmA_HPDgtRrMNVmfgOaWG5iCRkQgWQIAyVgPqvpJ3Q/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Candidate Name": "={{ $json.candidate_name }}",
+            "Positon Applied": "={{ $json.role_applied }}",
+            "Summary": "={{ $json.summary }}",
+            "Qualified for the Role?": "={{ $json.verdict }}",
+            "Scoring": "=Role fit score: {{ $json.score_fit }}\nExperience score: {{ $json.score_experience }}\nBackground score{{ $json.score_overall }}\nOverall score: {{ $json.score_background }}\n\n",
+            "Phone number": "={{ $json.contact_phone }}",
+            "Email": "={{ $json.contact_email }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Candidate Name",
+              "displayName": "Candidate Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone number",
+              "displayName": "Phone number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Positon Applied",
+              "displayName": "Positon Applied",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Scoring",
+              "displayName": "Scoring",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Qualified for the Role?",
+              "displayName": "Qualified for the Role?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1392,
+        -16
+      ],
+      "id": "f1c3d3c6-9ae7-4013-b38a-ea8215599ac1",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HcExDaRJovEaitnv",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

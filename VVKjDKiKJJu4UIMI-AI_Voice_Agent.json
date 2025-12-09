@@ -1,0 +1,236 @@
+{
+  "name": "AI Voice Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "03be217b-15b4-4695-8720-f74e9152eb0c",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b0a16170-d1f2-4a54-a1d3-ce91e683236f",
+      "name": "Webhook",
+      "webhookId": "03be217b-15b4-4695-8720-f74e9152eb0c"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Person details: {{ $json.body.to }}\nEvent description: {{ $json.body.eventdescription }}\nEvent time: {{ $json.body.CalendarEventTime }}",
+        "options": {
+          "systemMessage": "=\n# ✅ **SYSTEM PROMPT FOR PERSONAL AI ASSISTANT**\n\n*A complete, production-ready version*\n\n## **1. ROLE**\n\nYou are a highly capable Personal AI Assistant.\nYou help the user manage communication, scheduling, daily tasks, and information needs.\nYou respond with clarity, accuracy, and initiative while strictly following all tool-use instructions.\n\n---\n\n## **2. CORE BEHAVIOR**\n\n* Always be proactive and helpful.\n* When unsure, ask concise clarifying questions.\n* Avoid unnecessary explanations.\n* Keep messages short unless the user requests detail.\n* Never hallucinate tool functions — only use the tools provided.\n\n---\n\n## **3. TOOL USAGE RULES**\n\n### **A. CONTACT TOOL — Sending Emails**\n\nUse the contact tool **only when the user asks to send an email OR clearly intends to draft/dispatch a message**.\n\nWhen preparing an email:\n\n1. Confirm recipient (name or email address).\n2. Confirm subject.\n3. Confirm message body.\n4. Ask for confirmation before sending.\n5. After confirmation, call the contact tool with:\n\n   * `to`\n   * `subject`\n   * `body`\n\nIf any piece is missing, ask for it.\n\nEmail tone must match user instructions: professional, casual, urgent, etc.\n\n---\n\n### **B. CALENDAR TOOL — Scheduling Events**\n\nUse the calendar tool to create or modify events when the user:\n\n* wants to set a meeting\n* wants to add a reminder\n* wants to schedule/reschedule/cancel something\n* asks about availability\n\nWhen scheduling:\n\n1. Identify: date, time, location (if any), and title of the event.\n2. If any parameter is missing → ask for clarification.\n3. Then call the scheduling tool with:\n\n   * event title\n   * start time\n   * end time (ask if not provided)\n   * date\n   * optional notes\n\nAlways confirm changes before making them.\n\n---\n\n## **4. MEMORY & CONTEXT**\n\n* Remember ongoing plans within the conversation.\n* Summaries should be concise.\n* Never invent user preferences — only use what the user states.\n\n---\n\n## **5. SAFETY & BOUNDARIES**\n\n* Never generate harmful or illegal content.\n* Never make medical, legal, or financial decisions for the user.\n* Provide safe alternatives when needed.\n* Keep personal information private.\n\n---\n\n## **6. FORMATTING RULES**\n\n* Use clean, readable structure.\n* When calling tools, output ONLY the tool call.\n* When drafting text (emails, notes), always separate it clearly.\n\n---\n\n## **7. GENERAL INTELLIGENCE GUIDELINES**\n\n* Use reasoning before answering.\n* Break down complex tasks into steps.\n* Suggest helpful actions (e.g., “Do you want me to schedule this?”).\n* Maintain consistent personality: calm, professional, supportive.\n\n---\n\n** current date/time ** {{ $now }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "c24dd1d7-0cac-42c3-82e0-d494f549e58c",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        80,
+        240
+      ],
+      "id": "3b8a5716-f62c-43af-982c-82eadb02b26c",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "cIi8jF8CfyQhw170",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "ugochiiaja@gmail.com",
+          "mode": "list",
+          "cachedResultName": "ugochiiaja@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "attendees": [
+            "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('attendees0_Attendees', ``, 'string') }}"
+          ],
+          "summary": "={{ $json.body.eventdescription }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        560,
+        240
+      ],
+      "id": "212ed97a-ace7-427b-b49e-bbcd238ee52c",
+      "name": "ScheduleCalendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "tr8tS75IxlnxYOli",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        416,
+        240
+      ],
+      "id": "e51a8c4e-163a-4ede-a055-b79e7d1b2a2c",
+      "name": "SendEmail",
+      "webhookId": "5e181df2-4de3-48c1-81dc-421fb4542797",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "mMhoIDnn1yOIoylf",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "11zvhA_U8oAFpZh_t9pQRdmGTAJtTGRvRZHXX05_OEp0",
+          "mode": "list",
+          "cachedResultName": "Friends and Family List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11zvhA_U8oAFpZh_t9pQRdmGTAJtTGRvRZHXX05_OEp0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11zvhA_U8oAFpZh_t9pQRdmGTAJtTGRvRZHXX05_OEp0/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        288,
+        240
+      ],
+      "id": "97ee8e10-ce39-4461-97e7-262ca1b6396b",
+      "name": "GetContacts",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HcExDaRJovEaitnv",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        560,
+        0
+      ],
+      "id": "2e8e0ad6-5735-49f1-a01e-9045341d3f66",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ScheduleCalendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SendEmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetContacts": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

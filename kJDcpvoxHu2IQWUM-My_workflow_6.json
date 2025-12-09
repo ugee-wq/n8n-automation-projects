@@ -1,0 +1,660 @@
+{
+  "name": "My workflow 6",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -2240,
+        416
+      ],
+      "id": "386e466b-84f7-4c4b-8202-04f9fe75bc93",
+      "name": "Gmail Trigger"
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.snippet }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "sender's name",
+              "description": "extract the sender's name from this email, if no name return an empty string",
+              "required": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        -1968,
+        416
+      ],
+      "id": "2c31d3f5-a6be-41d1-99da-d617a34ad9f0",
+      "name": "Information Extractor"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -2016,
+        624
+      ],
+      "id": "40a10eb7-ad84-454a-9186-e3614d1aa7ee",
+      "name": "Google Gemini Chat Model"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f7d1cd8e-5d85-43f8-a903-0eac6cd698be",
+              "leftValue": "={{ $json.output['sender name'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1584,
+        416
+      ],
+      "id": "8ec9723f-73d9-4ff6-99ad-d51cbefe2816",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "01142b54-ff64-4760-bfda-581a4d8f173a",
+              "name": "Intro",
+              "value": "={{ $json.output['sender\\'s name'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1312,
+        352
+      ],
+      "id": "d26df748-447f-4fcb-8116-5c61f598393e",
+      "name": "Sender name exists"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a0be0cd6-1060-402d-8449-0e48c4c0049b",
+              "name": "intro",
+              "value": "Hello Dear",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1312,
+        496
+      ],
+      "id": "f5f6d9ae-9ea7-4351-a85b-b9d036727e69",
+      "name": "No sender name"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "Intro",
+        "joinMode": "keepNonMatches",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1056,
+        416
+      ],
+      "id": "c9a38bac-f903-4e2b-b90a-9f465d51a688",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1bbb227c-2f31-4235-a4e2-8f7a29b616e8",
+              "name": "Intro",
+              "value": "={{ $json.Intro }}",
+              "type": "string"
+            },
+            {
+              "id": "70754c8c-cd48-42b7-8787-cf8df7422b3f",
+              "name": "id",
+              "value": "={{ $('Gmail Trigger').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "ace8c97b-c87f-4a0e-b35b-dabae975ddce",
+              "name": "threadId",
+              "value": "={{ $('Gmail Trigger').item.json.threadId }}",
+              "type": "string"
+            },
+            {
+              "id": "48b0d546-0f7b-4771-b495-03aa1769811a",
+              "name": "snippet",
+              "value": "={{ $('Gmail Trigger').item.json.snippet }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -800,
+        416
+      ],
+      "id": "c3e38794-a5cb-4c10-a90a-aad3c64bf9be",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.snippet }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "Booking",
+              "description": "Emails related to appointment scheduling, reservations, booking confirmations, calendar invites, meeting requests, time slot selections, rescheduling requests, or booking cancellations"
+            },
+            {
+              "category": "Consultation",
+              "description": "booking \"Emails related to appointment scheduling, reservations, booking confirmations, calendar invites, meeting requests, time slot selections, rescheduling requests, or booking cancellations.\" consultation \"Emails requesting professional advice, consultation sessions, expert opinions, one-on-one advisory meetings, consultation fee inquiries, or follow-ups from consultation calls"
+            },
+            {
+              "category": "General Inquiries",
+              "description": "General questions, information requests, introductory emails, initial contact messages, unclear requests that don't fit other categories, or broad questions about services, products, or business operations"
+            },
+            {
+              "category": "Mentorship",
+              "description": "Emails about mentorship programs, mentoring relationships, guidance requests, career advice, learning opportunities, mentor-mentee communications, coaching sessions, or long-term development discussions"
+            },
+            {
+              "category": "Support",
+              "description": "Technical support requests, troubleshooting issues, help with existing products or services, bug reports, account problems, customer service inquiries, or requests for assistance with ongoing issues"
+            },
+            {
+              "category": "Training",
+              "description": "Emails about training programs, workshops, courses, educational sessions, skill development, training schedules, training materials, enrollment in training courses, certification programs, training feedback, or requests to conduct or attend training sessions"
+            }
+          ]
+        },
+        "options": {
+          "systemPromptTemplate": "Please classify the text provided by the user into one of the following categories: {categories}, and use the provided formatting instructions below. Don't explain, and only output the json."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        -528,
+        352
+      ],
+      "id": "7fd70338-2341-4041-9e0d-159edc1dbe5f",
+      "name": "Text Classifier"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        704
+      ],
+      "id": "cff5ba19-60a1-4cc4-af52-e1dcf408cbc1",
+      "name": "Google Gemini Chat Model1"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Edit Fields').item.json.id }}",
+        "labelIds": [
+          "Label_7315082252717571345"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        480
+      ],
+      "id": "84568b2a-9fae-485a-a91d-c995e1a548f4",
+      "name": "Add label to message1",
+      "webhookId": "5c4086c8-d009-4530-b5d8-83dcd3c29790"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Edit Fields').item.json.id }}",
+        "labelIds": [
+          "Label_6419724225633719348"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        160
+      ],
+      "id": "f2457a65-461a-4526-a964-a56d53484c54",
+      "name": "Add label to message2",
+      "webhookId": "5c4086c8-d009-4530-b5d8-83dcd3c29790"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Edit Fields').item.json.id }}",
+        "labelIds": [
+          "Label_8676463707593519542"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c528d607-5b3f-431a-81e0-a4c1fb4335e8",
+      "name": "Add label to message3",
+      "webhookId": "5c4086c8-d009-4530-b5d8-83dcd3c29790"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Edit Fields').item.json.id }}",
+        "labelIds": [
+          "Label_5734705697604583112"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        320
+      ],
+      "id": "c65ccfc3-354b-4ab7-b3b7-1780ffb0ca04",
+      "name": "Add label to message4",
+      "webhookId": "5c4086c8-d009-4530-b5d8-83dcd3c29790"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Edit Fields').item.json.id }}",
+        "labelIds": [
+          "Label_6915315705188941274"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        800
+      ],
+      "id": "5182c43e-4102-4eee-827f-10cff508bda7",
+      "name": "Add label to message",
+      "webhookId": "5c4086c8-d009-4530-b5d8-83dcd3c29790"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Edit Fields').item.json.id }}",
+        "labelIds": [
+          "Label_634319044672193722"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        640
+      ],
+      "id": "0aa61aa9-825e-4d5e-89ca-383e842aad71",
+      "name": "Add label to message5",
+      "webhookId": "5c4086c8-d009-4530-b5d8-83dcd3c29790"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Edit Fields').item.json.snippet }}",
+        "options": {
+          "systemMessage": "You are the professional customer service AI agent for Ugees Catering Services, a premium catering company that provides exceptional food and service for events of all sizes. Your role is to respond to all incoming messages with warmth, professionalism, and helpfulness.\n\nYour Core Responsibilities:\n1. Respond promptly and courteously to all customer inquiries\n2. Provide accurate information about our catering services\n3. Gather necessary details for bookings and consultations\n4. Address concerns and questions with empathy and clarity\n5. Guide customers through our service offerings and booking process\n6. Maintain a friendly yet professional tone that reflects our brand values\n\nCompany Information - Ugees Catering Services:\nServices Offered: Full-service catering for weddings, corporate events, birthdays, anniversaries, private parties, and special occasions\nCuisine Types: Nigerian cuisine, Continental dishes, BBQ, Finger foods, Small chops, celebration cakes, deserts\nService Areas: Ebonyi state, Rivers state\nCapacity: Events from intimate gatherings (10 guests) to large celebrations (500+ guests)\nAdditional Services: Event planning support, equipment rental, waitstaff, bartending services, table settings, decor coordination \n\nResponse Guidelines:\n\nTone & Style:\n- Warm, welcoming, and enthusiastic about food and events\n- Professional but approachable\n- Clear and concise\n- Positive and solution-oriented\n- Use the customer's name when provided\n\nFor BOOKING Inquiries:\nGather the following essential information politely:\n- Event type (wedding, corporate, birthday, etc.)\n- Event date and time\n- Number of expected guests\n- Event location/venue\n- Type of service needed (buffet, plated service, cocktail style, etc.)\n- Menu preferences or dietary requirements\n- Budget range (if comfortable sharing)\n- Any special requests\n\nExample Response:\n\"Thank you for considering Ugees Catering Services for your [event type]! We'd be delighted to make your special day memorable with our delicious cuisine and exceptional service.\n\nTo provide you with an accurate quote and proposal, I'd like to gather a few details:\n- What date are you planning for?\n- How many guests will you be hosting?\n- What's your preferred service style?\n- Do you have any specific menu preferences?\n\nOnce I have these details, I can connect you with our catering coordinator who will create a customized package for you.\"\n\nFor CONSULTATION Requests:\n- Acknowledge their interest warmly\n- Explain the consultation process\n- Offer available time slots or ask for their preferred timing\n- Clarify if consultation is in-person, phone, or virtual\n- Mention what will be discussed (menu options, pricing, logistics)\n\nExample Response:\n\"We'd love to schedule a consultation to discuss your catering needs! During our consultation, we'll review menu options, discuss your vision, go over pricing packages, and answer all your questions.\n\nWe offer consultations via phone, video call, or in-person at our office. What works best for you? Please share your preferred date and time, and we'll confirm availability.\"\n\nFor GENERAL INQUIRIES:\n- Answer questions clearly and comprehensively\n- Provide relevant details about services, pricing structures, or processes\n- If you don't have specific information, acknowledge it honestly and offer to connect them with the appropriate team member\n- Always end with an invitation to ask more questions or take the next step\n\nFor MENTORSHIP/TRAINING:\n- Acknowledge interest in learning from Ugees Catering\n- Explain any training programs, internships, or mentorship opportunities available\n- Provide application process or next steps\n- Share requirements or prerequisites if any\n\nFor SUPPORT Issues:\n- Show empathy and understanding\n- Apologize if there's been an issue\n- Gather details about the problem\n- Provide immediate solutions if possible\n- Escalate to management when necessary\n- Follow up to ensure resolution\n\nExample Response:\n\"I sincerely apologize for the inconvenience you've experienced. Your satisfaction is our top priority, and I want to make this right. \n\nCould you please provide more details about [the issue]? This will help me address your concern promptly and ensure it doesn't happen again. \n\n[If urgent]: I'm escalating this to our management team immediately, and someone will contact you within [timeframe].\"\n\n## Important Rules:\n1. **Never promise specific prices without proper consultation** - always say \"pricing depends on your specific requirements\" and offer to schedule a consultation\n2. **Never confirm availability without checking** - say \"let me check our availability for that date\"\n3. **Be honest about limitations** - if we don't offer something, suggest alternatives or partner services\n4. **Protect customer privacy** - never share other clients' details\n5. **Stay on brand** - emphasize quality, reliability, and exceptional service\n6. **Always provide next steps** - every response should guide the customer toward booking or getting more information\n7. **Response time expectation** - aim to respond within 2-4 hours during business hours; acknowledge after-hours messages and confirm when they'll receive a detailed response\n\nClosing Guidelines:\nAlways end messages with:\n- A clear call-to-action or next step\n- Your signature: \"Warm regards, Ugees Catering Services Team\"\n- Contact information: [07051173161, ugeescateringservices@gmail.com, @ugee91, @ugees_catering_servives]\n- Business hours: 8AM to 6PM \n\nSample Signatures:\n\"Looking forward to making your event extraordinary!\n\nWarm regards,  \nUgees Catering Services\n📞 +2347051173161 \n📧 ugeescateringservices@gmail.com  \n📍 24 Silas Ihunwo Street, Woji\n✖️ @ugee91\n📷 ugees_catering_services\nBusiness Hours: 8AM to 6PM\n\nSpecial Scenarios:\n\n**Pricing Questions:**\n\"Our catering packages are customized based on your specific needs, guest count, menu selections, and service requirements. This ensures you get exactly what you want within your budget. I'd be happy to schedule a consultation where we can discuss your event and provide detailed pricing. When would be a good time for you?\"\n\n**Last-Minute Requests:**\n\"Thank you for thinking of us! While we typically require [X weeks] notice for event planning, we understand that sometimes special occasions come up quickly. Let me check our availability and see what we can do to accommodate your event. Please share the details, and I'll get back to you as soon as possible.\"\n\n**Dietary Restrictions/Allergies:**\n\"We absolutely accommodate dietary restrictions and allergies. We can prepare vegetarian, vegan, gluten-free, halal, kosher, and other specialized menus. Please share the specific requirements, and we'll ensure everyone at your event enjoys a safe and delicious meal.\"\n\nRemember: Every interaction is an opportunity to showcase Ugees Catering Services' commitment to excellence, hospitality, and creating memorable dining experiences. Be helpful, be genuine, and always strive to exceed expectations!\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        320,
+        384
+      ],
+      "id": "afbd9280-164c-446a-9957-a78d827c6f6c",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        320,
+        672
+      ],
+      "id": "1ce9397d-0d5b-4513-a8a5-5064dd44bc3c",
+      "name": "Google Gemini Chat Model2"
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{ $('Edit Fields').item.json.id }}",
+        "emailType": "text",
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        672,
+        384
+      ],
+      "id": "2d279385-36b0-456a-9d0f-0d6d13cc707a",
+      "name": "Reply to a message",
+      "webhookId": "2447adce-e1fe-4fb6-b053-3789d135f9ed"
+    }
+  ],
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Sender name exists",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No sender name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sender name exists": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No sender name": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "Add label to message3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add label to message2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add label to message4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add label to message1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add label to message5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add label to message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label to message3": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label to message4": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label to message2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label to message1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label to message5": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label to message": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Reply to a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": null
+}

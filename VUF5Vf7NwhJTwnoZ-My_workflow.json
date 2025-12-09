@@ -1,0 +1,192 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ce2e5f73-c378-47c4-8828-3e27e20e0622",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "55d5ea46-05d7-4c91-98be-7555f026ec84",
+      "name": "Webhook",
+      "webhookId": "ce2e5f73-c378-47c4-8828-3e27e20e0622"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d8b9a09d-882f-4105-a56e-3d56c67a2e92",
+              "name": "body.name",
+              "value": "={{ $json.body.name }}",
+              "type": "string"
+            },
+            {
+              "id": "7881e17b-48f2-4308-94d9-313d9641e705",
+              "name": "body.email",
+              "value": "={{ $json.body.email }}",
+              "type": "string"
+            },
+            {
+              "id": "41023744-3d05-4a18-81b9-9313bafbc0a6",
+              "name": "body.phone",
+              "value": "={{ $json.body.phone }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        288,
+        0
+      ],
+      "id": "e1d96d57-d14f-40b4-becd-55b197fd5c1a",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1NjbemBNG_S2a-h3QFO0XslCfYoHtcDCVRPnfoBuSKdA",
+          "mode": "list",
+          "cachedResultName": "BOOTCAMP ATTENDANCE",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1NjbemBNG_S2a-h3QFO0XslCfYoHtcDCVRPnfoBuSKdA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1NjbemBNG_S2a-h3QFO0XslCfYoHtcDCVRPnfoBuSKdA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "NAME": "={{ $json.body.name }}",
+            "EMAIL": "={{ $json.body.email }}",
+            "PHONE NUMBER": "={{ $json.body.phone }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "NAME",
+              "displayName": "NAME",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "EMAIL",
+              "displayName": "EMAIL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "PHONE NUMBER",
+              "displayName": "PHONE NUMBER",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        528,
+        0
+      ],
+      "id": "d4588a07-1bda-40f1-a92d-45811f095624",
+      "name": "Append row in sheet"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.EMAIL }}",
+        "subject": "Bootcamp Attendance Received",
+        "emailType": "text",
+        "message": "=Hello {{ $json.NAME }}\n\nThank you for submitting your attendance. I hope the training was impactful.\n\nThank you.",
+        "options": {
+          "senderName": "Ugochi",
+          "replyToSenderOnly": true
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        736,
+        0
+      ],
+      "id": "c0f887db-c295-4bda-9cb6-dcdcdb5a50de",
+      "name": "Send a message",
+      "webhookId": "194ae2b9-77ee-4f5c-98eb-3a0b533c0536"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}
